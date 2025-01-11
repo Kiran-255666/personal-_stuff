@@ -1,4 +1,4 @@
-from fabric import task
+from fabric import task, Connection
 
 REMOTE_HOST = "192.168.1.145"
 USERNAME = "rps"
@@ -13,7 +13,7 @@ def get_remote_directory_contents(c):
     print(f"Querying the contents of the remote directory: {remote_directory}\n")
     try:
         # Establish connection to the remote machine
-        conn = c.connection if hasattr(c, 'connection') else Connection(
+        conn = c.Connection if hasattr(c, 'connection') else Connection(
             host=REMOTE_HOST,
             user=USERNAME,
             connect_kwargs={"password": PASSWORD},
