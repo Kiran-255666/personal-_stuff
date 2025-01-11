@@ -1,8 +1,8 @@
 from fabric import task
 
-REMOTE_HOST = "192.168.1.194"
-USERNAME = "admin"
-PASSWORD = "yankeeD00dle"
+REMOTE_HOST = "192.168.1.145"
+USERNAME = "rps"
+PASSWORD = "rps@123"
 
 @task
 def get_remote_directory_contents(c):
