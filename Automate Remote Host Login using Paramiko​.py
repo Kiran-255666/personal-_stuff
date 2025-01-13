@@ -1,56 +1,64 @@
 import paramiko
 
-# Remote server details
-hostname = "192.168.1.166"  # Replace with the hostname or IP of the remote server
-port = 22  # Default SSH port
-username = "rps"  # Replace with your SSH username
-password = "rps@123"  # Replace with your SSH password
-
-def ssh_execute_command(hostname, port, username, password, command):
-    """
-    Connects to a remote server via SSH, executes a command, and returns the output.
-
-    :param hostname: The hostname or IP address of the remote server.
-    :param port: The SSH port (default is 22).
-    :param username: The username for SSH authentication.
-    :param password: The password for SSH authentication.
-    :param command: The command to execute on the remote server.
-    :return: The command output as a string.
-    """
+def connect_to_remote_host(hostname, port, username, password):
     try:
-        # Create an SSH client instance
+        # Initialize SSH client
         ssh_client = paramiko.SSHClient()
-
-        # Automatically add the server's host key (use cautiously)
+        
+        # Automatically add the host key if it's not already in known_hosts
         ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-        # Connect to the server
+        
+        # Connect to the remote host
+        print(f"Connecting to {hostname}...")
         ssh_client.connect(hostname, port=port, username=username, password=password)
+        print(f"Connected to {hostname}!")
+        
+        # Open an interactive shell session
+        shell = ssh_client.invoke_shell()
+        print("Interactive shell started. You can now run commands on the remote host.")
+        return ssh_client, shell
 
-        # Execute the command
-        stdin, stdout, stderr = ssh_client.exec_command(command)
+    except Exception as e:
+        print(f"An error occurred during connection: {e}")
+        return None, None
 
-        # Read the command's output and error
-        output = stdout.read().decode()
-        error = stderr.read().decode()
-
-        # Print the output or error
-        if output:
-            print("Directories:")
+def interact_with_remote(shell):
+    try:
+        while True:
+            # Prompt the user for commands to execute on the remote host
+            command = input("Enter command to execute (or type 'exit' to quit): ").strip()
+            if command.lower() == 'exit':
+                print("Exiting interactive shell...")
+                break
+            
+            # Send the command to the remote shell
+            shell.send(command + '\n')
+            
+            # Wait for a response and print it
+            while not shell.recv_ready():
+                pass  # Wait until there is data to read
+            
+            output = shell.recv(1024).decode()
             print(output)
-        if error:
-            print("Error:")
-            print(error)
-
-        # Close the SSH connection
-        ssh_client.close()
-
+    except KeyboardInterrupt:
+        print("\nExiting interactive session...")
     except Exception as e:
         print(f"An error occurred: {e}")
 
-# Command to list directories on the remote server
-command_to_run = "ls -l"
+if __name__ == "__main__":
+    # Replace these with your remote host details
+    hostname = "192.168.1.166"  # Remote host's IP or domain
+    port = 22                             # Default SSH port
+    username = "rps"            # Your username
+    password = "rps@123"            # Your password
 
-# Call the function
-ssh_execute_command(hostname, port, username, password, command_to_run)
+    # Connect to the remote host and start the interactive shell
+    ssh_client, shell = connect_to_remote_host(hostname, port, username, password)
 
+    if ssh_client and shell:
+        # Interact with the remote host
+        interact_with_remote(shell)
+        
+        # Close the connection after the session
+        ssh_client.close()
+        print("Connection closed.")
