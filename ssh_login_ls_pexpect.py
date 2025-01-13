@@ -35,15 +35,17 @@ def ssh_login_and_execute():
         elif index == 3:  # Timeout
             raise Exception("Connection timed out.")
 
-        # Execute the command
-        command = "ls"
-        print(f"Executing command: {command}")
-        child.sendline(command)
-        child.expect(r"\$")  # Wait for shell prompt to reappear
+        # Commands to execute
+        commands = ["hostname", "ifconfig", "ls -l"]
 
-        # Retrieve and print output
-        output = child.before.decode()
-        print(f"Command Output:\n{output}")
+        for command in commands:
+            print(f"Executing command: {command}")
+            child.sendline(command)
+            child.expect(r"\$")  # Wait for shell prompt to reappear
+
+            # Retrieve and print output
+            output = child.before.decode()
+            print(f"Output of `{command}`:\n{output}")
 
         # Close the session
         child.sendline("exit")
