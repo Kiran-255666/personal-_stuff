@@ -1,4 +1,5 @@
 import paramiko
+import time
 
 def connect_to_remote_host(hostname, port, username, password):
     try:
@@ -34,11 +35,15 @@ def interact_with_remote(shell):
             # Send the command to the remote shell
             shell.send(command + '\n')
             
-            # Wait for a response and print it
-            while not shell.recv_ready():
-                pass  # Wait until there is data to read
+            # Wait for the command to execute
+            time.sleep(1)
             
-            output = shell.recv(1024).decode()
+            # Read all available output
+            output = ""
+            while shell.recv_ready():
+                output += shell.recv(1024).decode()
+
+            # Display the command output
             print(output)
     except KeyboardInterrupt:
         print("\nExiting interactive session...")
