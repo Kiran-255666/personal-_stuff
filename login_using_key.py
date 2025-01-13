@@ -58,7 +58,7 @@ def ssh_login_and_execute(hostname, username, private_key_path, command):
 
 if __name__ == "__main__":
     # Replace these with your details
-     hostname="192.168.1.1666",
+    hostname="192.168.1.1666",
     username="rps",
     private_key_path="~/.ssh/id_rsa",
     command="ls -l"
