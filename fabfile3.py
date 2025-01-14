@@ -1,3 +1,4 @@
+import subprocess
 from fabric import task, Connection
 
 REMOTE_HOST = "192.168.1.166"
@@ -13,7 +14,7 @@ def query_local_and_remote_info(c):
         # List of local commands
         local_commands = [
             ("Hostname", "hostname"),
-            ("Network Configuration", "ifconfig" if c.local("uname", hide=True).stdout.strip() == "Linux" else "ipconfig"),
+            ("Network Configuration", "ifconfig"),
             ("System Uptime", "uptime"),
             ("Current Users", "who"),
             ("Memory Usage", "free -h"),
@@ -23,8 +24,11 @@ def query_local_and_remote_info(c):
         # Execute local commands
         for desc, command in local_commands:
             print(f"> {desc}:")
-            result = c.local(command, hide=True)
-            print(result.stdout.strip(), "\n")
+            result = subprocess.run(command, shell=True, capture_output=True, text=True)
+            if result.returncode == 0:
+                print(result.stdout.strip(), "\n")
+            else:
+                print(f"Error executing '{command}': {result.stderr.strip()}\n")
 
     except Exception as e:
         print(f"Error obtaining local system information: {e}")
@@ -43,7 +47,7 @@ def query_local_and_remote_info(c):
         # List of remote commands
         remote_commands = [
             ("Hostname", "hostname"),
-            ("Network Configuration", "ifconfig" if conn.run("uname", hide=True).stdout.strip() == "Linux" else "ipconfig"),
+            ("Network Configuration", "ifconfig"),
             ("System Uptime", "uptime"),
             ("Current Users", "who"),
             ("Memory Usage", "free -h"),
