@@ -1,7 +1,15 @@
 #!/bin/bash
 
 # Define the virtual environment name
-VENV_NAME="myvenv"
+VENV_NAME="my_python_env"
+
+# Update system packages
+echo "Updating system packages..."
+sudo apt update && sudo apt upgrade -y
+
+# Install Python3 and venv module if not already installed
+echo "Installing Python3 and venv module if not installed..."
+sudo apt install -y python3 python3-venv
 
 # Check if Python3 is installed
 if ! command -v python3 &> /dev/null
