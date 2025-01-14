@@ -1,6 +1,6 @@
 from fabric import task, Connection
 
-REMOTE_HOST = "192.168.1.145"
+REMOTE_HOST = "192.168.1.166"
 USERNAME = "rps"
 PASSWORD = "rps@123"
 
