@@ -2,9 +2,6 @@ import pexpect
 import sys
 
 
-import sys
-import pexpect
-
 def ssh_connect(host, username, password):
     """
     Establish an SSH connection to a remote machine.
@@ -16,30 +13,32 @@ def ssh_connect(host, username, password):
     try:
         print(f"Connecting to {host} as {username}...")
         ssh_command = f"ssh {username}@{host}"
-        session = pexpect.spawn(ssh_command, timeout=30)
+        
+        # Use a log file to capture the session output
+        with open("ssh_log.txt", "w", encoding="utf-8") as log_file:
+            session = pexpect.spawn(ssh_command, timeout=30)
+            session.logfile = log_file
 
-        # Use sys.stdout with string handling for compatibility
-        session.logfile = sys.stdout.buffer if hasattr(sys.stdout, 'buffer') else sys.stdout
-
-        # Handle SSH password prompt
-        index = session.expect(["password:", pexpect.EOF, pexpect.TIMEOUT])
-        if index == 0:
-            session.sendline(password)
-            session.expect(f"{username}@")
-            print(f"Successfully connected to {host}.")
-        elif index == 1:
-            print("Unexpected EOF while trying to connect via SSH.")
-            session.close()
-            return None
-        elif index == 2:
-            print("SSH connection timed out.")
-            session.close()
-            return None
+            # Handle SSH password prompt
+            index = session.expect(["password:", pexpect.EOF, pexpect.TIMEOUT])
+            if index == 0:
+                session.sendline(password)
+                session.expect(f"{username}@")
+                print(f"Successfully connected to {host}.")
+            elif index == 1:
+                print("Unexpected EOF while trying to connect via SSH.")
+                session.close()
+                return None
+            elif index == 2:
+                print("SSH connection timed out.")
+                session.close()
+                return None
 
         return session
     except Exception as e:
         print(f"An error occurred while connecting to {host}: {e}")
         return None
+
 
 
 
