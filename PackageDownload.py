@@ -9,36 +9,37 @@ def ssh_automation():
     download_dir = "~/mydownloads"
 
     try:
-        # Use encoding to handle Unicode strings
-        child = pexpect.spawn(f"ssh {username}@{ssh_host}", timeout=120, encoding='utf-8')
+        # Set up the SSH connection with an increased timeout
+        child = pexpect.spawn(f"ssh {username}@{ssh_host}", timeout=500, encoding='utf-8')
 
-        # Open the debug log in text mode
-        child.logfile = open("debug.txt", "w", encoding='utf-8')
+        # Open a debug log file
+        child.logfile = open("debug.log", "w", encoding="utf-8")
 
-        # Handle the password prompt
-        child.expect("password: ", timeout=60)
+        # Handle SSH password prompt
+        child.expect("password: ")
         child.sendline(password)
 
-        # Handle the login banner
-        child.expect("Last login", timeout=60)
-        child.expect(r".*[$#] ", timeout=60)  # Match the shell prompt
+        # Handle shell prompt
+        child.expect(r".*[$#] ")
 
         print("[Installing package]")
-        child.sendline(f'sudo apt-get install -y {package_name}')
-        child.expect(r".*[$#] ", timeout=60)
+        child.sendline(f"sudo apt-get install -y {package_name}")
+        child.expect("password for .*: ", timeout=500)  # Wait for the sudo password prompt
+        child.sendline(password)  # Provide the sudo password
+        child.expect(r".*[$#] ", timeout=500)  # Wait for the installation to complete
 
         print("[Preparing download directory]")
         child.sendline(f"mkdir -p {download_dir}")
-        child.expect(r".*[$#] ", timeout=60)
+        child.expect(r".*[$#] ", timeout=500)
 
         print("[Downloading file]")
         child.sendline(f"wget -P {download_dir} {file_url}")
-        child.expect(r".*[$#] ", timeout=60)
+        child.expect(r".*[$#] ", timeout=500)
 
         print("[Listing files]")
         child.sendline(f"ls {download_dir}")
-        child.expect(r".*[$#] ", timeout=60)
-        print(child.before)  # Output the file list
+        child.expect(r".*[$#] ", timeout=500)
+        print(child.before)  # Print the file list
 
         child.sendline("exit")
         child.close()
@@ -47,6 +48,6 @@ def ssh_automation():
     except pexpect.exceptions.EOF:
         print("Unexpected EOF encountered.")
     except pexpect.exceptions.TIMEOUT:
-        print("Operation timed out. Check debug.txt for details.")
+        print("Operation timed out. Check debug.log for details.")
 
 ssh_automation()
