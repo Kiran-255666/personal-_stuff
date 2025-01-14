@@ -2,6 +2,9 @@ import pexpect
 import sys
 
 
+import sys
+import pexpect
+
 def ssh_connect(host, username, password):
     """
     Establish an SSH connection to a remote machine.
@@ -13,8 +16,10 @@ def ssh_connect(host, username, password):
     try:
         print(f"Connecting to {host} as {username}...")
         ssh_command = f"ssh {username}@{host}"
-        session = pexpect.spawn(ssh_command, timeout=200)
-        session.logfile = sys.stdout  # Log SSH session output to the console
+        session = pexpect.spawn(ssh_command, timeout=30)
+
+        # Use sys.stdout with string handling for compatibility
+        session.logfile = sys.stdout.buffer if hasattr(sys.stdout, 'buffer') else sys.stdout
 
         # Handle SSH password prompt
         index = session.expect(["password:", pexpect.EOF, pexpect.TIMEOUT])
@@ -35,6 +40,7 @@ def ssh_connect(host, username, password):
     except Exception as e:
         print(f"An error occurred while connecting to {host}: {e}")
         return None
+
 
 
 def remote_install_package(session, package_name):
