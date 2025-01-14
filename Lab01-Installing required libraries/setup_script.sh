@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the virtual environment name
-VENV_NAME="my_python_env"
+VENV_NAME="myvenv"
 
 # Update system packages
 echo "Updating system packages..."
