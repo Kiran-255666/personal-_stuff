@@ -1,113 +1,44 @@
-import pexpect 
+import pexpect
 
- 
+def ssh_automation():
+    ssh_host = "192.168.1.166"
+    username = "rps"
+    password = "rps@123"
+    package_name = "wget"
+    file_url = "https://raw.githubusercontent.com/Kiran-255666/personal-_stuff/refs/heads/main/sample.txt"
+    download_dir = "~/Downloads"
 
-def ssh_automation(): 
+    try:
+        child = pexpect.spawn(f"ssh {username}@{ssh_host}", timeout=60, encoding="utf-8", logfile=open("debug.log", "wb"))
 
-    # Define server and operation details 
+        child.expect("password: ")
+        child.sendline(password)
+        child.expect(r"\$ ")
 
-    ssh_host = "192.168.1.166"  # Replace with your remote server 
+        print("[Installing package]")
+        child.sendline(f'echo "{password}" | sudo -S apt-get install -y {package_name}')
+        child.expect(r"\$ ")
 
-    username = "rps"       # Replace with your username 
+        print("[Preparing download directory]")
+        child.sendline(f"mkdir -p {download_dir}")
+        child.expect(r"\$ ")
 
-    password = "rps@123"       # Replace with your password 
+        print("[Downloading file]")
+        child.sendline(f"wget -P {download_dir} {file_url}")
+        child.expect(r"\$ ")
 
-    package_name = "wget"            # Package to install 
+        print("[Listing files]")
+        child.sendline(f"ls {download_dir}")
+        child.expect(r"\$ ")
+        print(child.before)  # Output the file list
 
-    file_url = "https://raw.githubusercontent.com/Kiran-255666/personal-_stuff/refs/heads/main/sample.txt"  # File to download 
+        child.sendline("exit")
+        child.close()
+        print("Remote operations completed successfully!")
 
-    download_dir = "~/Downloads"     # Target directory on remote server 
+    except pexpect.exceptions.EOF:
+        print("Unexpected EOF encountered.")
+    except pexpect.exceptions.TIMEOUT:
+        print("Operation timed out. Check debug.log for details.")
 
- 
-
-    try: 
-
-        # Start an SSH session 
-
-        child = pexpect.spawn(f"ssh {username}@{ssh_host}") 
-
- 
-
-        # Wait for the password prompt 
-
-        child.expect("password: ") 
-
-        child.sendline(password) 
-
- 
-
-        # Wait for the shell prompt 
-
-        child.expect(r"\$ ") 
-
- 
-
-        # Step 1: Install the specified package 
-
-        print("[Installing package]") 
-
-        child.sendline(f"sudo apt-get install -y {package_name}") 
-
-        child.expect("password for .*: ") 
-
-        child.sendline(password) 
-
-        child.expect(r"\$ ") 
-
- 
-
-        # Step 2: Create the target directory if it doesn't exist 
-
-        print("[Preparing download directory]") 
-
-        child.sendline(f"mkdir -p {download_dir}") 
-
-        child.expect(r"\$ ") 
-
- 
-
-        # Step 3: Download the file 
-
-        print("[Downloading file]") 
-
-        child.sendline(f"wget -P {download_dir} {file_url}") 
-
-        child.expect(r"\$ ") 
-
- 
-
-        # Step 4: List the files in the download directory 
-
-        print("[Listing files]") 
-
-        child.sendline(f"ls {download_dir}") 
-
-        child.expect(r"\$ ") 
-
-        print(child.before.decode())  # Output the file list 
-
- 
-
-        # Step 5: Close the session 
-
-        child.sendline("exit") 
-
-        child.close() 
-
-        print("Remote operations completed successfully!") 
-
- 
-
-    except pexpect.exceptions.EOF: 
-
-        print("Unexpected EOF encountered.") 
-
-    except pexpect.exceptions.TIMEOUT: 
-
-        print("Operation timed out.") 
-
- 
-
-# Execute the function 
-
-ssh_automation() 
+ssh_automation()
